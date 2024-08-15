@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generált Szám</title>
+    <style>
+        body {
+            color: #fff;
+            font-size: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #result {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<p id="result"></p>
+
+<script>
+    function generateNumber() {
+        let now = new Date();
+        let year = now.getFullYear();
+        let month = now.getMonth() + 1; // A hónap 0-tól indul, ezért +1
+        let day = now.getDate();
+        let hours = now.getHours();
+        let minutes = now.getMinutes();
+
+        // Számok összeadása
+        let sum = year + month + day + hours + minutes;
+
+        // Szorzás 33-mal
+        let multiplied = sum * 33;
+
+        // Az utolsó 6 számjegy kinyerése
+        let lastSixDigits = multiplied.toString().slice(-6);
+
+        // Ha kevesebb mint 6 számjegyű, 0-val feltöltjük
+        lastSixDigits = lastSixDigits.padStart(6, '0');
+
+        // A kapott szám módosítása: hozzáadunk 73-at, hozzáadunk 8-at, majd megszorozzuk 8-cal
+        let modifiedNumber = (parseInt(lastSixDigits) + 73 + 8) * 8;
+
+        // Az utolsó 6 számjegy kinyerése a végső eredményből
+        let finalResult = modifiedNumber.toString().slice(-6);
+
+        // Ha kevesebb mint 6 számjegyű, 0-val feltöltjük
+        finalResult = finalResult.padStart(6, '0');
+
+        // Formázás 000 000 alakra
+        finalResult = finalResult.slice(0, 3) + ' ' + finalResult.slice(3);
+
+        return finalResult;
+    }
+
+    function updateNumber() {
+        document.getElementById("result").textContent = generateNumber();
+    }
+
+    // Első frissítés az oldal betöltésekor
+    updateNumber();
+
+    // Frissítés percenként
+    setInterval(updateNumber, 60000); // 60000 ms = 1 perc
+
+</script>
+
+</body>
+</html>
