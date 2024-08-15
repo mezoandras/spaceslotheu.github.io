@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets adat lekérés</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #sheet-data {
+            color: #fff;
+            font-size: 36px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <p id="sheet-data">Betöltés...</p>
+
+    <script>
+        const url = 'https://docs.google.com/spreadsheets/d/1btpXID-V4t6F2V4Ab6YBls05VqPkO3CWW9nA-YwHyHc/gviz/tq?tqx=out:csv&range=A1';
+
+        fetch(url)
+            .then(response => response.text())
+            .then(data => {
+                // Az idézőjelek eltávolítása a szövegből
+                const cleanData = data.replace(/^"|"$/g, '');
+                document.getElementById('sheet-data').textContent = cleanData;
+            })
+            .catch(error => console.error('Error:', error));
+    </script>
+
+</body>
+</html>

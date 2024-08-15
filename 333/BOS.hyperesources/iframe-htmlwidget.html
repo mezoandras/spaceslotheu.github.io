@@ -1,7 +1,43 @@
-<iframe src="https://docs.google.com/spreadsheets/d/1btpXID-V4t6F2V4Ab6YBls05VqPkO3CWW9nA-YwHyHc/edit?usp=sharing" 
-        width="100%" 
-        height="100%" 
-        frameborder="0" 
-        style="border:0; 
-               margin-top:10px;">
-</iframe>
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets adat lekérés</title>
+</head>
+<body>
+    <div id="sheet-data"></div>
+
+    <script>
+        // A2:C12 cellák adatainak lekérése
+        const url = 'https://docs.google.com/spreadsheets/d/1btpXID-V4t6F2V4Ab6YBls05VqPkO3CWW9nA-YwHyHc/gviz/tq?tqx=out:csv&range=A2:C100';
+
+        fetch(url)
+            .then(response => response.text())
+            .then(data => {
+                // Az adatok soronkénti felosztása (új sor karakter alapján)
+                const rows = data.trim().split('\n');
+
+                // Minden egyes sort feldolgozunk
+                rows.forEach(row => {
+                    // A sor celláinak felosztása vessző alapján és az idézőjelek eltávolítása
+                    const cells = row.replace(/\"/g, '').split(',');
+
+                    // Ellenőrizzük, hogy megvan-e a három cella
+                    if (cells.length >= 3) {
+                        // Sor létrehozása a cellák adataival, vessző nélkül
+                        const rowData = `${cells[0]} ${cells[1]} ${cells[2]}`;
+                        // Új <p> elem létrehozása és hozzáadása a dokumentumhoz
+                        const p = document.createElement('p');
+                        p.textContent = rowData;
+                        document.getElementById('sheet-data').appendChild(p);
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('sheet-data').textContent = 'Hiba történt az adatok betöltése közben.';
+            });
+    </script>
+</body>
+</html>
