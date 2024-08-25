@@ -4,12 +4,70 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Google Sheets adat lekérés</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        #sheet-data {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .data-block {
+            background-color: #D5CDCB;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .data-info {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .data-info p {
+            margin: 0;
+        }
+
+        .data-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .data-date {
+            font-size: 14px;
+            color: #888;
+        }
+
+        .data-amount {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .data-amount.positive {
+            color: green;
+        }
+
+        .data-amount.negative {
+            color: red;
+        }
+    </style>
 </head>
 <body>
     <div id="sheet-data"></div>
 
     <script>
-        // A2:C12 cellák adatainak lekérése
+        // A2:C100 cellák adatainak lekérése
         const url = 'https://docs.google.com/spreadsheets/d/1btpXID-V4t6F2V4Ab6YBls05VqPkO3CWW9nA-YwHyHc/gviz/tq?tqx=out:csv&range=A2:C100';
 
         fetch(url)
@@ -25,12 +83,48 @@
 
                     // Ellenőrizzük, hogy megvan-e a három cella
                     if (cells.length >= 3) {
-                        // Sor létrehozása a cellák adataival, vessző nélkül
-                        const rowData = `${cells[0]} ${cells[1]} ${cells[2]}`;
-                        // Új <p> elem létrehozása és hozzáadása a dokumentumhoz
-                        const p = document.createElement('p');
-                        p.textContent = rowData;
-                        document.getElementById('sheet-data').appendChild(p);
+                        // Adatok kinyerése
+                        const title = cells[0];
+                        const date = cells[1];
+                        const amount = parseFloat(cells[2].replace(/\s/g, ''));
+
+                        // Új div elem létrehozása a blokkhoz
+                        const block = document.createElement('div');
+                        block.className = 'data-block';
+
+                        // Bal oldalra (dátum és szöveg)
+                        const infoDiv = document.createElement('div');
+                        infoDiv.className = 'data-info';
+
+                        const titleP = document.createElement('p');
+                        titleP.className = 'data-title';
+                        titleP.textContent = title;
+
+                        const dateP = document.createElement('p');
+                        dateP.className = 'data-date';
+                        dateP.textContent = date;
+
+                        infoDiv.appendChild(titleP);
+                        infoDiv.appendChild(dateP);
+
+                        // Jobb oldalra (összeg)
+                        const amountP = document.createElement('p');
+                        amountP.className = 'data-amount';
+
+                        if (amount < 0) {
+                            amountP.classList.add('negative');
+                            amountP.textContent = `-${Math.abs(amount).toLocaleString('hu-HU', { maximumFractionDigits: 0 })} HUF`;
+                        } else {
+                            amountP.classList.add('positive');
+                            amountP.textContent = `${amount.toLocaleString('hu-HU', { maximumFractionDigits: 0 })} HUF`;
+                        }
+
+                        // Az elemek hozzáadása a blokkhoz
+                        block.appendChild(infoDiv);
+                        block.appendChild(amountP);
+
+                        // A blokk hozzáadása a dokumentumhoz
+                        document.getElementById('sheet-data').appendChild(block);
                     }
                 });
             })

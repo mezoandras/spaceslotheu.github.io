@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Sheets adat lekérés</title>
     <style>
         body {
             display: flex;
@@ -13,7 +12,8 @@
             margin: 0;
         }
         #sheet-data {
-            color: #fff;
+            color: #EAE2DD;
+            font-family: Arial, sans-serif;
             font-size: 36px;
             text-align: center;
         }
@@ -29,9 +29,14 @@
         fetch(url)
             .then(response => response.text())
             .then(data => {
-                // Az idézőjelek eltávolítása a szövegből
-                const cleanData = data.replace(/^"|"$/g, '');
-                document.getElementById('sheet-data').textContent = cleanData;
+                // Sor végéről az esetleges új sor karakter eltávolítása
+                const cleanData = data.trim().replace(/^"|"$/g, '');
+
+                // A szám értéket számként kezelve formázás (szóköz a számcsoportok között)
+                const formattedNumber = parseFloat(cleanData.replace(/,/g, '')).toLocaleString('hu-HU');
+
+                // Az érték megjelenítése HUF hozzáadásával
+                document.getElementById('sheet-data').textContent = `${formattedNumber} HUF`;
             })
             .catch(error => console.error('Error:', error));
     </script>
