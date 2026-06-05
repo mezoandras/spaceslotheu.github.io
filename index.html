@@ -1,66 +1,581 @@
 <!DOCTYPE html>
-<html>
-  <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<meta http-equiv="X-UA-Compatible" content="chrome=1,IE=edge" />
-	<title>Space Sloth 🇪🇺</title>
-	<style>
-		html {
-			height:100%;
-		}
-		body {
-			background-color:#CECECE;
-			margin:0;
-			height:100%;
-		}
-	</style>
-	<!-- copy these lines to your document head: -->
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Space Sloth</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-	<meta name="viewport" content="user-scalable=yes, width=600" />
-	
+    :root {
+      --ink:    #0a0a0f;
+      --paper:  #f5f0e8;
+      --cream:  #ece6d8;
+      --moss:   #3d5a3e;
+      --moss2:  #6a9b6c;
+      --amber:  #d4873a;
+      --star:   #e8dfc8;
+      --glow:   rgba(106,155,108,0.18);
+    }
 
-    <style>
-        body {
-            cursor: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><text y="28" font-size="28">🚀</text></svg>') 16 16, auto;
-        }
-    </style>
+    html { scroll-behavior: smooth; }
 
+    body {
+      background: var(--ink);
+      color: var(--paper);
+      font-family: 'Space Mono', monospace;
+      overflow-x: hidden;
+      cursor: none;
+    }
 
-	
+    /* ── CURSOR ── */
+    #cursor {
+      width: 14px; height: 14px;
+      border: 2px solid var(--moss2);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: transform .12s ease, background .2s;
+      mix-blend-mode: difference;
+    }
+    #cursor.big {
+      transform: translate(-50%,-50%) scale(3.5);
+      background: var(--glow);
+    }
 
-	<!-- end copy -->
-  </head>
-  <body>
-	<!-- copy these lines to your document: -->
+    /* ── STARFIELD ── */
+    #stars {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .star {
+      position: absolute;
+      background: var(--star);
+      border-radius: 50%;
+      animation: twinkle var(--d) ease-in-out infinite alternate;
+    }
+    @keyframes twinkle {
+      from { opacity: var(--lo); transform: scale(1); }
+      to   { opacity: 1;        transform: scale(1.6); }
+    }
 
-	<div id="index_hype_container" class="HYPE_document" style="margin:auto;position:relative;width:100%;height:100%;overflow:hidden;">
-		<script type="text/javascript" charset="utf-8" src="index.hyperesources/index_hype_generated_script.js?60727"></script>
-	</div>
+    /* ── LAYOUT ── */
+    section { position: relative; z-index: 1; }
 
-	<!-- end copy -->
-	
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.4rem 3rem;
+      background: linear-gradient(to bottom, rgba(10,10,15,.9) 0%, transparent 100%);
+      backdrop-filter: blur(4px);
+    }
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.2rem;
+      letter-spacing: .08em; color: var(--moss2);
+      text-decoration: none;
+    }
+    .logo span { color: var(--amber); }
+    nav ul { list-style: none; display: flex; gap: 2.5rem; }
+    nav a {
+      font-size: .72rem; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--paper); text-decoration: none; opacity: .7;
+      transition: opacity .2s, color .2s;
+      position: relative;
+    }
+    nav a::after {
+      content:''; position: absolute; bottom:-4px; left:0; width:0; height:1px;
+      background: var(--moss2); transition: width .3s ease;
+    }
+    nav a:hover { opacity: 1; color: var(--moss2); }
+    nav a:hover::after { width: 100%; }
 
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: grid; place-items: center;
+      padding: 8rem 3rem 4rem;
+      text-align: center;
+    }
+    .hero-inner { max-width: 860px; }
+    .eyebrow {
+      font-size: .7rem; letter-spacing: .26em; text-transform: uppercase;
+      color: var(--moss2); margin-bottom: 2rem;
+      display: inline-flex; align-items: center; gap: .8rem;
+    }
+    .eyebrow::before, .eyebrow::after {
+      content:''; display:block; width:40px; height:1px; background:var(--moss2);
+    }
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3.2rem, 9vw, 7.5rem);
+      font-weight: 800; line-height: .95;
+      letter-spacing: -.02em;
+    }
+    h1 .line { display: block; overflow: hidden; }
+    h1 .line span {
+      display: block;
+      animation: slideUp .9s cubic-bezier(.16,1,.3,1) both;
+    }
+    h1 .line:nth-child(1) span { animation-delay: .1s; }
+    h1 .line:nth-child(2) span { animation-delay: .22s; color: var(--moss2); }
+    h1 .line:nth-child(3) span { animation-delay: .34s; }
+    @keyframes slideUp {
+      from { transform: translateY(110%); opacity: 0; }
+      to   { transform: translateY(0);   opacity: 1; }
+    }
+    .hero-sub {
+      margin: 2.4rem auto 3.2rem;
+      font-size: .9rem; line-height: 1.8; opacity: .6; max-width: 520px;
+      animation: fadeIn 1.2s .6s both;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(16px);} to { opacity:.6; transform:none;} }
 
-	<!-- text content for search engines: -->
+    .cta-row {
+      display: flex; gap: 1.2rem; justify-content: center; flex-wrap: wrap;
+      animation: fadeIn 1.2s .8s both;
+    }
+    .btn {
+      padding: .85rem 2.2rem; font-family: 'Space Mono', monospace;
+      font-size: .75rem; letter-spacing: .14em; text-transform: uppercase;
+      text-decoration: none; border: none; cursor: none;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-primary {
+      background: var(--moss); color: var(--paper);
+      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+    }
+    .btn-primary:hover {
+      background: var(--moss2);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(106,155,108,.35);
+    }
+    .btn-ghost {
+      background: transparent; color: var(--paper);
+      border: 1px solid rgba(245,240,232,.25);
+      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+    }
+    .btn-ghost:hover {
+      border-color: var(--moss2); color: var(--moss2);
+      transform: translateY(-3px);
+    }
 
-	<div style="display:none" aria-hidden=true>
+    /* ── SLOTH GRAPHIC ── */
+    .sloth-wrap {
+      margin: 5rem auto 0;
+      width: 220px; height: 220px;
+      position: relative;
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0) rotate(-2deg); }
+      50%      { transform: translateY(-22px) rotate(2deg); }
+    }
+    .sloth-ring {
+      position: absolute; inset: -20px;
+      border-radius: 50%;
+      border: 1px solid rgba(106,155,108,.25);
+      animation: spin 20s linear infinite;
+    }
+    .sloth-ring::before {
+      content:''; position:absolute; top:-4px; left:50%;
+      transform:translateX(-50%);
+      width:8px; height:8px; border-radius:50%;
+      background: var(--amber);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .sloth-svg { width:100%; height:100%; }
 
-		<div>about</div>
-		<div></div>
-		<div>Our website is currently undergoing renovation.
-We are working hard to improve your experience and will be back soon.
-Thank you for your patience!</div>
-		<div>We are the </div>
-		<div>contact</div>
-		<div>help
+    /* ── MARQUEE ── */
+    .marquee-wrap {
+      overflow: hidden; border-top: 1px solid rgba(245,240,232,.1);
+      border-bottom: 1px solid rgba(245,240,232,.1);
+      padding: .9rem 0; margin: 4rem 0;
+    }
+    .marquee-track {
+      display: flex; gap: 3rem; white-space: nowrap;
+      animation: marquee 18s linear infinite;
+    }
+    @keyframes marquee { to { transform: translateX(-50%); } }
+    .marquee-item {
+      font-size: .68rem; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--moss2); opacity: .6;
+    }
+    .marquee-dot { color: var(--amber); }
+
+    /* ── SERVICES ── */
+    #services {
+      padding: 6rem 3rem;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .section-label {
+      font-size: .68rem; letter-spacing: .24em; text-transform: uppercase;
+      color: var(--amber); margin-bottom: 1rem;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 800; margin-bottom: 3.5rem;
+      max-width: 600px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .card {
+      background: rgba(245,240,232,.04);
+      border: 1px solid rgba(245,240,232,.09);
+      padding: 2rem;
+      transition: transform .3s, border-color .3s, box-shadow .3s;
+      position: relative; overflow: hidden;
+    }
+    .card::before {
+      content:''; position:absolute; inset:0;
+      background: radial-gradient(circle at top left, var(--glow), transparent 70%);
+      opacity:0; transition: opacity .4s;
+    }
+    .card:hover { transform: translateY(-6px); border-color: var(--moss2); }
+    .card:hover { box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+    .card:hover::before { opacity:1; }
+    .card-num {
+      font-size: .65rem; color: var(--amber); letter-spacing: .16em;
+      margin-bottom: 1.4rem; opacity: .7;
+    }
+    .card-icon { font-size: 1.8rem; margin-bottom: 1rem; }
+    .card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem; font-weight: 700; margin-bottom: .8rem;
+    }
+    .card p { font-size: .78rem; line-height: 1.75; opacity: .55; }
+
+    /* ── ABOUT ── */
+    #about {
+      padding: 6rem 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem; align-items: center;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .about-visual {
+      position: relative;
+    }
+    .about-box {
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, var(--moss) 0%, rgba(61,90,62,.2) 100%);
+      border: 1px solid rgba(106,155,108,.3);
+      display: grid; place-items: center;
+      font-size: 6rem;
+    }
+    .about-badge {
+      position: absolute; bottom: -1.5rem; right: -1.5rem;
+      background: var(--amber); color: var(--ink);
+      padding: 1rem 1.4rem;
+      font-family: 'Syne', sans-serif; font-weight: 800;
+      font-size: .85rem; text-transform: uppercase; letter-spacing: .06em;
+    }
+    .about-text .section-title { margin-bottom: 1.5rem; }
+    .about-text p { font-size: .83rem; line-height: 1.85; opacity: .6; margin-bottom: 1.2rem; }
+    .stats { display: flex; gap: 2.5rem; margin-top: 2.5rem; }
+    .stat-num {
+      font-family: 'Syne', sans-serif; font-size: 2.4rem;
+      font-weight: 800; color: var(--moss2); line-height: 1;
+    }
+    .stat-label { font-size: .65rem; letter-spacing: .14em; text-transform: uppercase; opacity: .5; margin-top: .4rem; }
+
+    /* ── CONTACT ── */
+    #contact {
+      padding: 6rem 3rem 8rem;
+      text-align: center;
+      max-width: 700px; margin: 0 auto;
+    }
+    #contact .section-title { margin: 0 auto 1.5rem; }
+    #contact p { font-size: .85rem; opacity: .55; line-height: 1.8; margin-bottom: 2.5rem; }
+    .contact-email {
+      display: inline-block;
+      font-family: 'Syne', sans-serif; font-size: clamp(1.2rem, 3vw, 2rem);
+      font-weight: 800; color: var(--moss2); text-decoration: none;
+      border-bottom: 2px solid var(--moss); padding-bottom: .3rem;
+      transition: color .2s, border-color .2s;
+    }
+    .contact-email:hover { color: var(--amber); border-color: var(--amber); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid rgba(245,240,232,.08);
+      padding: 2rem 3rem;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: .65rem; letter-spacing: .12em; opacity: .35;
+      position: relative; z-index: 1;
+    }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal {
+      opacity: 0; transform: translateY(32px);
+      transition: opacity .8s ease, transform .8s cubic-bezier(.16,1,.3,1);
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 768px) {
+      nav { padding: 1.2rem 1.5rem; }
+      nav ul { gap: 1.4rem; }
+      #about { grid-template-columns: 1fr; gap: 3rem; }
+      .about-visual { display: none; }
+      footer { flex-direction: column; gap: .8rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<!-- STARS -->
+<div id="stars"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">Space<span>Sloth</span>.eu</a>
+  <ul>
+    <li><a href="#services">Szolgáltatások</a></li>
+    <li><a href="#about">Rólunk</a></li>
+    <li><a href="#contact">Kapcsolat</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">spacesloth.eu</div>
+    <h1>
+      <span class="line"><span>Lassan,</span></span>
+      <span class="line"><span>de biztosan</span></span>
+      <span class="line"><span>az égig.</span></span>
+    </h1>
+    <p class="hero-sub">
+      Digitális megoldások, amelyek nem sietnek — mert a minőség időt igényel.
+      Webfejlesztés, design és stratégia a csillagokig.
+    </p>
+    <div class="cta-row">
+      <a href="#services" class="btn btn-primary">Fedezd fel</a>
+      <a href="#contact" class="btn btn-ghost">Írj nekünk</a>
+    </div>
+
+    <!-- Sloth illustration -->
+    <div class="sloth-wrap">
+      <div class="sloth-ring"></div>
+      <svg class="sloth-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Glow -->
+        <circle cx="100" cy="100" r="90" fill="rgba(61,90,62,0.15)"/>
+        <!-- Body -->
+        <ellipse cx="100" cy="115" rx="48" ry="42" fill="#3d5a3e"/>
+        <!-- Head -->
+        <circle cx="100" cy="76" r="34" fill="#4a6e4b"/>
+        <!-- Face mask -->
+        <ellipse cx="100" cy="82" rx="21" ry="18" fill="#3d5a3e"/>
+        <!-- Eyes -->
+        <circle cx="90" cy="74" r="8" fill="#0a0a0f"/>
+        <circle cx="110" cy="74" r="8" fill="#0a0a0f"/>
+        <circle cx="91" cy="72" r="3" fill="#6a9b6c"/>
+        <circle cx="111" cy="72" r="3" fill="#6a9b6c"/>
+        <circle cx="92" cy="71" r="1.2" fill="white"/>
+        <circle cx="112" cy="71" r="1.2" fill="white"/>
+        <!-- Nose -->
+        <ellipse cx="100" cy="84" rx="5" ry="3.5" fill="#2a3d2a"/>
+        <!-- Smile -->
+        <path d="M91 90 Q100 97 109 90" stroke="#2a3d2a" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <!-- Ears -->
+        <circle cx="68" cy="60" r="12" fill="#4a6e4b"/>
+        <circle cx="68" cy="60" r="6" fill="#2a3d2a"/>
+        <circle cx="132" cy="60" r="12" fill="#4a6e4b"/>
+        <circle cx="132" cy="60" r="6" fill="#2a3d2a"/>
+        <!-- Arms -->
+        <path d="M55 115 Q30 100 28 80" stroke="#3d5a3e" stroke-width="14" stroke-linecap="round" fill="none"/>
+        <path d="M145 115 Q170 100 172 80" stroke="#3d5a3e" stroke-width="14" stroke-linecap="round" fill="none"/>
+        <!-- Claws left -->
+        <line x1="28" y1="80" x2="20" y2="72" stroke="#2a3d2a" stroke-width="3" stroke-linecap="round"/>
+        <line x1="28" y1="80" x2="16" y2="80" stroke="#2a3d2a" stroke-width="3" stroke-linecap="round"/>
+        <line x1="28" y1="80" x2="22" y2="90" stroke="#2a3d2a" stroke-width="3" stroke-linecap="round"/>
+        <!-- Claws right -->
+        <line x1="172" y1="80" x2="180" y2="72" stroke="#2a3d2a" stroke-width="3" stroke-linecap="round"/>
+        <line x1="172" y1="80" x2="184" y2="80" stroke="#2a3d2a" stroke-width="3" stroke-linecap="round"/>
+        <line x1="172" y1="80" x2="178" y2="90" stroke="#2a3d2a" stroke-width="3" stroke-linecap="round"/>
+        <!-- Belly -->
+        <ellipse cx="100" cy="118" rx="28" ry="24" fill="#5a8a5c" opacity="0.5"/>
+        <!-- Stars on body -->
+        <text x="88" y="122" font-size="10" fill="#d4873a" opacity="0.8">✦</text>
+        <text x="103" y="115" font-size="7" fill="#e8dfc8" opacity="0.6">✦</text>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap reveal">
+  <div class="marquee-track">
+    <span class="marquee-item">Webfejlesztés</span>
+    <span class="marquee-dot">✦</span>
+    <span class="marquee-item">UI / UX Design</span>
+    <span class="marquee-dot">✦</span>
+    <span class="marquee-item">Branding</span>
+    <span class="marquee-dot">✦</span>
+    <span class="marquee-item">SEO & Stratégia</span>
+    <span class="marquee-dot">✦</span>
+    <span class="marquee-item">E-commerce</span>
+    <span class="marquee-dot">✦</span>
+    <span class="marquee-item">Mobilalkalmazás</span>
+    <span class="marquee-dot">✦</span>
+    <!-- duplicate for seamless loop -->
+    <span class="marquee-item">Webfejlesztés</span>
+    <span class="marquee-dot">✦</span>
+    <span class="marquee-item">UI / UX Design</span>
+    <span class="marquee-dot">✦</span>
+    <span class="marquee-item">Branding</span>
+    <span class="marquee-dot">✦</span>
+    <span class="marquee-item">SEO & Stratégia</span>
+    <span class="marquee-dot">✦</span>
+    <span class="marquee-item">E-commerce</span>
+    <span class="marquee-dot">✦</span>
+    <span class="marquee-item">Mobilalkalmazás</span>
+    <span class="marquee-dot">✦</span>
+  </div>
 </div>
-		<div>SPACESLOTH.EU</div>
-		<div>hello</div>
-		<div>HELLO</div>
 
-	</div>
+<!-- SERVICES -->
+<section id="services">
+  <p class="section-label reveal">Amit kínálunk</p>
+  <h2 class="section-title reveal">Digitális megoldások, minden méretre</h2>
+  <div class="cards">
+    <div class="card reveal">
+      <div class="card-num">01</div>
+      <div class="card-icon">🌐</div>
+      <h3>Webfejlesztés</h3>
+      <p>Egyedi, gyors és modern weboldalak, amelyek valóban dolgoznak helyetted. HTML5, React, és minden közte.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-num">02</div>
+      <div class="card-icon">🎨</div>
+      <h3>UI / UX Design</h3>
+      <p>Felhasználói élmény, amelyre emlékeznek. Tervezzük meg együtt, hogyan gondolkodik a te vásárlód.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-num">03</div>
+      <div class="card-icon">🛒</div>
+      <h3>E-commerce</h3>
+      <p>Online bolt, ami valóban elad. WooCommerce-től Shopify-ig megtaláljuk a legjobb megoldást neked.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-num">04</div>
+      <div class="card-icon">🔍</div>
+      <h3>SEO & Marketing</h3>
+      <p>Legyél ott, ahol a vásárlóid keresnek. Organikus növekedés, tartós eredményekkel.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-num">05</div>
+      <div class="card-icon">📱</div>
+      <h3>Mobilalkalmazás</h3>
+      <p>iOS és Android megoldások — natív vagy cross-platform, az igényeidre szabva.</p>
+    </div>
+    <div class="card reveal">
+      <div class="card-num">06</div>
+      <div class="card-icon">✦</div>
+      <h3>Branding</h3>
+      <p>Arculat, ami megkülönböztet. Logo, színpaletta, brand guide — minden, ami kellesz ahhoz, hogy emlékezetes legyél.</p>
+    </div>
+  </div>
+</section>
 
-	<!-- end text content: -->
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-visual reveal">
+    <div class="about-box">🦥</div>
+    <div class="about-badge">Space Sloth</div>
+  </div>
+  <div class="about-text">
+    <p class="section-label reveal">Rólunk</p>
+    <h2 class="section-title reveal">Lassan mozgunk. Precízen célzunk.</h2>
+    <p class="reveal">
+      A lajhár nem siet — de minden mozdulatával pontosan oda ér, ahová kell.
+      Mi is így dolgozunk. Átgondoltan, aprólékosan, mindig az ügyfél céljait szem előtt tartva.
+    </p>
+    <p class="reveal">
+      A Space Sloth egy kis, szenvedélyes csapat, amely hisz abban, hogy a legjobb digitális
+      megoldások nem pár nap alatt születnek. Minden projektet úgy kezelünk, mintha a sajátunk lenne.
+    </p>
+    <div class="stats reveal">
+      <div>
+        <div class="stat-num">40+</div>
+        <div class="stat-label">Projekt</div>
+      </div>
+      <div>
+        <div class="stat-num">5★</div>
+        <div class="stat-label">Értékelés</div>
+      </div>
+      <div>
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Kávé</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-  </body>
+<!-- CONTACT -->
+<section id="contact">
+  <p class="section-label reveal">Kapcsolat</p>
+  <h2 class="section-title reveal">Kezdjük el közösen!</h2>
+  <p class="reveal">Legyen szó kis projektről vagy nagy álomról — szívesen hallunk rólad. Írj, és lazán visszaírunk.</p>
+  <a href="mailto:hello@spacesloth.eu" class="contact-email reveal">hello@spacesloth.eu</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>© 2026 SpaceSloth.eu — Minden jog fenntartva.</span>
+  <span>Lassan, de biztosan. 🦥</span>
+</footer>
+
+<script>
+  // ── Cursor
+  const cur = document.getElementById('cursor');
+  document.addEventListener('mousemove', e => {
+    cur.style.left = e.clientX + 'px';
+    cur.style.top  = e.clientY + 'px';
+  });
+  document.querySelectorAll('a, .btn, .card').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('big'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('big'));
+  });
+
+  // ── Stars
+  const starField = document.getElementById('stars');
+  for (let i = 0; i < 180; i++) {
+    const s = document.createElement('div');
+    const size = Math.random() * 2.5 + .5;
+    s.classList.add('star');
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%; top:${Math.random()*100}%;
+      --d:${(Math.random()*4+2).toFixed(1)}s;
+      --lo:${(Math.random()*.4+.1).toFixed(2)};
+      animation-delay:${(Math.random()*5).toFixed(2)}s;
+    `;
+    starField.appendChild(s);
+  }
+
+  // ── Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 60);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(r => io.observe(r));
+</script>
+</body>
 </html>
