@@ -3,7 +3,7 @@
    Minden hivatkozás relatív, így a mappa bárhova másolható.
    Frissítéskor emeld a VERSION számot, különben a telefon a régit tartja meg. */
 
-const VERSION = "felirat-v4";
+const VERSION = "felirat-v5";
 const SHELL = [
   "./",
   "./index.html",

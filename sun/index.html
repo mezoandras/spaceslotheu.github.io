@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Felirat Stúdió — kép + szöveg</title>
 <meta name="description" content="Képfelirat-szerkesztő: tölts be egy képet, tedd rá a szöveget, töltsd le. Minden a készüléken marad.">
-<meta name="theme-color" content="#0E1216">
+<meta name="theme-color" content="#0B0E14">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" sizes="192x192">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -15,12 +15,14 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
 :root{
-  --rock:#0E1216;
+  --rock:#0B0E14;
   --line:rgba(255,255,255,.10);
-  --ice:#9BB1C2;
-  --snow:#F2F6F8;
-  --down:#FF9A2E;
-  --crimson:#FF6B60;
+  --ice:#98A2B0;
+  --snow:#F5F7FA;
+  --tint:#0A84FF;
+  --tint-deep:#0A6BE0;
+  --green:#30D158;
+  --red:#FF453A;
 
   --ui:-apple-system,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;
   --mono:"SF Mono",ui-monospace,Menlo,monospace;
@@ -44,9 +46,9 @@ textarea,input[type=text]{-webkit-user-select:text;user-select:text}
 /* ---------- folyékony üveg ---------- */
 .glass{
   position:relative;
-  background:rgba(24,30,38,.58);
-  -webkit-backdrop-filter:blur(30px) saturate(200%);
-  backdrop-filter:blur(30px) saturate(200%);
+  background:rgba(18,22,30,.66);
+  -webkit-backdrop-filter:blur(40px) saturate(190%);
+  backdrop-filter:blur(40px) saturate(190%);
   box-shadow:
     inset 0 .5px 0 rgba(255,255,255,.24),
     inset 0 0 0 .5px rgba(255,255,255,.07),
@@ -57,7 +59,7 @@ textarea,input[type=text]{-webkit-user-select:text;user-select:text}
   background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.02) 38%,transparent 62%);
 }
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  .glass{background:rgba(20,26,33,.96)}
+  .glass{background:rgba(16,20,27,.97)}
 }
 
 /* ---------- váz ---------- */
@@ -112,13 +114,13 @@ canvas.has-hit{cursor:grab}
   transition:transform .3s var(--spring),background .3s;
 }
 .drop:active{transform:scale(.985)}
-.drop.over{background:rgba(255,154,46,.10);box-shadow:inset 0 0 0 1.5px var(--down)}
+.drop.over{background:rgba(10,132,255,.12);box-shadow:inset 0 0 0 1.5px var(--tint)}
 .drop svg.topo{position:absolute;inset:0;width:100%;height:100%;opacity:.55;pointer-events:none}
 .drop .inner{position:relative;z-index:1;max-width:30ch}
 .drop .badge{
   width:60px;height:60px;border-radius:20px;margin:0 auto 16px;display:grid;place-items:center;
-  background:linear-gradient(180deg,rgba(255,154,46,.28),rgba(255,154,46,.12));
-  box-shadow:inset 0 .5px 0 rgba(255,255,255,.35),0 10px 24px -12px var(--down);
+  background:linear-gradient(180deg,rgba(10,132,255,.30),rgba(10,132,255,.12));
+  box-shadow:inset 0 .5px 0 rgba(255,255,255,.35),0 10px 24px -12px var(--tint);
 }
 .drop h2{font-size:19px;font-weight:600;letter-spacing:-.02em;margin:0 0 8px}
 .drop p{margin:0;color:var(--ice);font-size:13.5px;line-height:1.55}
@@ -150,9 +152,9 @@ canvas.has-hit{cursor:grab}
 .tabbar button svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .tabbar button:active{transform:scale(.93)}
 .tabbar button[aria-selected=true]{
-  color:var(--down);
-  background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(255,255,255,.05));
-  box-shadow:inset 0 .5px 0 rgba(255,255,255,.3);
+  color:var(--tint);
+  background:rgba(10,132,255,.15);
+  box-shadow:inset 0 0 0 .5px rgba(10,132,255,.35);
 }
 .tabbar button:disabled{opacity:.32}
 
@@ -162,7 +164,7 @@ canvas.has-hit{cursor:grab}
   font-size:12px;font-weight:600;color:var(--ice);margin:0 0 12px;letter-spacing:.02em;
   display:flex;justify-content:space-between;align-items:center;
 }
-.grp>h3 em{font-style:normal;font-family:var(--mono);color:var(--down);font-size:11px}
+.grp>h3 em{font-style:normal;font-family:var(--mono);color:var(--tint);font-size:11px}
 label.f{display:block;font-size:12px;color:var(--ice);margin:0 0 7px}
 .row{display:flex;gap:10px;margin-bottom:14px}
 .row>*{flex:1;min-width:0}
@@ -173,7 +175,7 @@ textarea,select,input[type=text]{
   padding:12px 13px;font-size:16px;outline:none;
 }
 textarea{resize:none;min-height:88px;line-height:1.4}
-textarea:focus,select:focus,input[type=text]:focus{box-shadow:inset 0 0 0 1.5px var(--down)}
+textarea:focus,select:focus,input[type=text]:focus{box-shadow:inset 0 0 0 1.5px var(--tint)}
 select{
   appearance:none;padding-right:32px;
   background-image:linear-gradient(45deg,transparent 50%,var(--ice) 50%),linear-gradient(135deg,var(--ice) 50%,transparent 50%);
@@ -182,9 +184,9 @@ select{
 }
 
 /* iOS szegmensvezérlő */
-.seg{display:flex;gap:2px;padding:2px;border-radius:14px;background:rgba(255,255,255,.08);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08)}
+.seg{display:flex;gap:2px;padding:2px;border-radius:980px;background:rgba(118,118,128,.26);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.07)}
 .seg button{
-  flex:1;background:transparent;border:0;padding:9px 4px;border-radius:12px;cursor:pointer;
+  flex:1;background:transparent;border:0;padding:9px 4px;border-radius:980px;cursor:pointer;
   font-size:13px;color:var(--ice);transition:background .28s var(--spring),color .2s,transform .18s;
 }
 .seg button:active{transform:scale(.96)}
@@ -195,12 +197,15 @@ select{
 
 /* iOS csúszka */
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;margin:0}
-input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:rgba(255,255,255,.16)}
+input[type=range]{--p:50%}
+input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;
+  background:linear-gradient(90deg,var(--tint) 0 var(--p),rgba(255,255,255,.16) var(--p) 100%)}
 input[type=range]::-webkit-slider-thumb{
   -webkit-appearance:none;width:27px;height:27px;margin-top:-11px;border-radius:50%;border:0;
   background:linear-gradient(180deg,#fff,#E7EDF1);box-shadow:0 2px 7px rgba(0,0,0,.5);cursor:pointer;
 }
-input[type=range]::-moz-range-track{height:5px;border-radius:3px;background:rgba(255,255,255,.16)}
+input[type=range]::-moz-range-track{height:5px;border-radius:3px;
+  background:linear-gradient(90deg,var(--tint) 0 var(--p),rgba(255,255,255,.16) var(--p) 100%)}
 input[type=range]::-moz-range-thumb{width:27px;height:27px;border:0;border-radius:50%;background:#fff;box-shadow:0 2px 7px rgba(0,0,0,.5)}
 .slider-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0}
 .val{font-family:var(--mono);font-size:12px;color:var(--ice)}
@@ -217,12 +222,12 @@ input[type=range]::-moz-range-thumb{width:27px;height:27px;border:0;border-radiu
   content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;
   background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.45);transition:transform .3s var(--spring);
 }
-.check input[type=checkbox]:checked{background:#34C759}
+.check input[type=checkbox]:checked{background:var(--green)}
 .check input[type=checkbox]:checked::after{transform:translateX(20px)}
 
 /* gombok */
 .btn{
-  border:0;border-radius:14px;cursor:pointer;padding:12px 15px;font-size:15px;font-weight:500;
+  border:0;border-radius:980px;cursor:pointer;padding:12px 20px;font-size:15px;font-weight:500;
   background:rgba(255,255,255,.10);color:var(--snow);
   box-shadow:inset 0 .5px 0 rgba(255,255,255,.25),inset 0 0 0 .5px rgba(255,255,255,.08);
   display:inline-flex;align-items:center;justify-content:center;gap:7px;
@@ -230,8 +235,10 @@ input[type=range]::-moz-range-thumb{width:27px;height:27px;border:0;border-radiu
 }
 .btn:active{transform:scale(.95)}
 .btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.btn.primary{background:linear-gradient(180deg,#FFA645,#F5871A);color:#22160A;font-weight:600;box-shadow:inset 0 .5px 0 rgba(255,255,255,.5),0 8px 20px -12px var(--down)}
-.btn.danger{color:var(--crimson)}
+.btn.primary{background:linear-gradient(180deg,#2E96FF,#0A6BE0);color:#fff;font-weight:600;
+  box-shadow:inset 0 .5px 0 rgba(255,255,255,.45),0 10px 22px -12px rgba(10,132,255,.9)}
+.btn.filled-red{background:linear-gradient(180deg,#FF5B50,#E02F26);color:#fff;font-weight:600;box-shadow:inset 0 .5px 0 rgba(255,255,255,.4)}
+.btn.danger{color:var(--red)}
 .btn.round{padding:0;width:38px;height:38px;border-radius:50%}
 .btn:disabled{opacity:.35;pointer-events:none}
 .btn.wide{width:100%}
@@ -241,7 +248,7 @@ input[type=range]::-moz-range-thumb{width:27px;height:27px;border:0;border-radiu
 .sw{width:32px;height:32px;border-radius:50%;border:0;cursor:pointer;padding:0;
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.28);transition:transform .2s var(--spring)}
 .sw:active{transform:scale(.9)}
-.sw[aria-pressed=true]{box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),0 0 0 2px var(--rock),0 0 0 4px var(--down)}
+.sw[aria-pressed=true]{box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),0 0 0 2px var(--rock),0 0 0 4px var(--tint)}
 input[type=color]{width:34px;height:34px;padding:0;border:0;border-radius:50%;background:none;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(255,255,255,.28)}
 input[type=color]::-webkit-color-swatch-wrapper{padding:2px}
 input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
@@ -254,7 +261,7 @@ input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
   transition:background .2s,transform .18s var(--spring);
 }
 .lay:active{transform:scale(.985)}
-.lay[aria-current=true]{background:rgba(255,154,46,.16);box-shadow:inset 0 0 0 1px rgba(255,154,46,.55)}
+.lay[aria-current=true]{background:rgba(10,132,255,.18);box-shadow:inset 0 0 0 1px rgba(10,132,255,.6)}
 .lay .n{font-family:var(--mono);font-size:11px;color:var(--ice)}
 .lay .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lay .mv{background:none;border:0;color:var(--ice);cursor:pointer;font-size:15px;padding:4px 6px;line-height:1;border-radius:8px}
@@ -301,7 +308,7 @@ input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
 }
 
 @media (prefers-reduced-motion:reduce){*{transition-duration:.01ms!important;animation-duration:.01ms!important}}
-:focus-visible{outline:2px solid var(--down);outline-offset:2px}
+:focus-visible{outline:2px solid var(--tint);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -346,7 +353,7 @@ input[type=color]::-webkit-color-swatch{border:0;border-radius:50%}
         </svg>
         <div class="inner">
           <div class="badge">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#FFC489" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#7FC0FF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 19l6-9 4 5.5 2.5-3.5L21 19z"/><circle cx="8" cy="6.5" r="2"/>
             </svg>
           </div>
@@ -526,8 +533,8 @@ const FONTS = {
   mono:     `"SF Mono",ui-monospace,Menlo,monospace`,
   script:   `"Snell Roundhand","Brush Script MT",cursive`
 };
-const FG  = ["#FFFFFF","#12171C","#FF9A2E","#D8342C","#8FD3F4","#FFE9C7"];
-const BGC = ["#000000","#FFFFFF","#FF9A2E","#D8342C","#1F2A33","#3A6B8A"];
+const FG  = ["#FFFFFF","#12171C","#0A84FF","#FF9A2E","#FF453A","#FFE9C7"];
+const BGC = ["#000000","#FFFFFF","#0A84FF","#FF9A2E","#FF453A","#1C2430"];
 
 const S = {
   img:null, name:"kep",
@@ -669,7 +676,7 @@ function render(forExport=false){
       ctx.save();
       ctx.translate((L.full?.5:L.x)*S.W, L.y*S.H);
       if(!L.full) ctx.rotate(L.rot*Math.PI/180);
-      ctx.strokeStyle="#FF9A2E"; ctx.lineWidth=Math.max(2,S.W*.0024);
+      ctx.strokeStyle="#0A84FF"; ctx.lineWidth=Math.max(2,S.W*.0024);
       ctx.setLineDash([S.W*.012,S.W*.009]);
       rrect(-m.boxW/2-S.W*.006,-m.boxH/2-S.W*.006,m.boxW+S.W*.012,m.boxH+S.W*.012,S.W*.02);
       ctx.stroke(); ctx.restore();
@@ -811,8 +818,14 @@ function swatches(host, colors, get, set){
 swatches("#fg", FG, ()=>sel()?.color, v=>{ const L=sel(); if(L) L.color=v; });
 swatches("#bg", BGC, ()=>sel()?.bg, v=>{ const L=sel(); if(L) L.bg=v; });
 
+function paintRange(el){
+  if(el.type!=="range") return;
+  const min=Number(el.min||0), max=Number(el.max||100);
+  el.style.setProperty("--p", ((Number(el.value)-min)/(max-min)*100).toFixed(1)+"%");
+}
 function bind(id, prop, {scale=1, fmt=null, ev="input"}={}){
   const el=$(id);
+  if(el.type==="range") el.addEventListener("input", ()=>paintRange(el));
   el.addEventListener(ev, ()=>{
     const L=sel(); if(!L) return;
     L[prop] = el.type==="checkbox" ? el.checked
@@ -822,7 +835,7 @@ function bind(id, prop, {scale=1, fmt=null, ev="input"}={}){
   });
   el._read = L => {
     if(el.type==="checkbox") el.checked=!!L[prop];
-    else if(el.type==="range") el.value=Math.round(L[prop]/scale);
+    else if(el.type==="range"){ el.value=Math.round(L[prop]/scale); paintRange(el); }
     else if(document.activeElement!==el) el.value=L[prop];
     if(fmt) $(fmt.el).textContent = fmt.f(L[prop]);
   };
@@ -957,6 +970,7 @@ function toast(msg){
 
 /* ---------------- indulás ---------------- */
 if(isPhone()){ $("#dropHint").textContent = "Koppints ide a fotóid megnyitásához. A kép a készüléken marad, semmi nem töltődik fel sehova."; }
+document.querySelectorAll('input[type=range]').forEach(paintRange);
 openTab("kep"); closeDock(); paintTabs(); syncUI(); setDockVar();
 })();
 </script>
