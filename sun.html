@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Felirat Stúdió — kép + szöveg</title>
+<style>
+:root{
+  --rock:#12171C;
+  --rock-2:#1A2129;
+  --rock-3:#232D37;
+  --line:#2E3B47;
+  --ice:#93AEC2;
+  --snow:#EEF4F7;
+  --down:#FF8A1F;
+  --down-dim:#B96311;
+  --crimson:#D8342C;
+
+  --ui:"Avenir Next","Helvetica Neue",Inter,system-ui,sans-serif;
+  --label:"Avenir Next Condensed","Futura",Oswald,"Avenir Next",sans-serif;
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{
+  margin:0;background:var(--rock);color:var(--snow);font-family:var(--ui);
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit;color:inherit}
+
+/* ---------- fejléc: magasságmérő-szalag ---------- */
+.strip{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  padding:10px 18px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#161C22,#12171C);
+  position:sticky;top:0;z-index:20;
+}
+.mark{font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:13px}
+.mark b{color:var(--down);font-weight:600}
+.readout{font-family:var(--mono);font-size:11px;color:var(--ice);letter-spacing:.06em;display:flex;gap:14px;flex-wrap:wrap}
+.readout span{white-space:nowrap}
+.strip .spacer{flex:1}
+
+/* ---------- elrendezés ---------- */
+.wrap{display:grid;grid-template-columns:minmax(0,1fr) 348px;gap:0;min-height:calc(100% - 46px)}
+.stage{
+  padding:26px;display:flex;align-items:flex-start;justify-content:center;
+  background:
+    radial-gradient(120% 90% at 50% -10%, #1B242D 0%, #12171C 62%);
+  min-width:0;
+}
+.panel{
+  border-left:1px solid var(--line);background:var(--rock-2);
+  padding:18px 16px 40px;overflow-y:auto;max-height:calc(100vh - 46px);position:sticky;top:46px;
+}
+@media (max-width:900px){
+  .wrap{grid-template-columns:1fr}
+  .panel{position:static;max-height:none;border-left:0;border-top:1px solid var(--line)}
+  .stage{padding:14px}
+}
+
+/* ---------- vászon / dobóterület ---------- */
+.holder{position:relative;max-width:100%;width:100%;display:flex;justify-content:center}
+canvas{
+  max-width:100%;max-height:calc(100vh - 120px);height:auto;display:block;
+  background:#0C1014;border-radius:2px;
+  box-shadow:0 0 0 1px var(--line),0 26px 60px -24px #000;
+  touch-action:none;cursor:default;
+}
+canvas.has-hit{cursor:grab}
+canvas.dragging{cursor:grabbing}
+.drop{
+  width:100%;max-width:520px;aspect-ratio:9/13;border:1px dashed var(--line);border-radius:3px;
+  position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:14px;text-align:center;padding:26px;cursor:pointer;
+  background:#141A20;transition:border-color .2s,background .2s;
+}
+.drop:hover,.drop.over{border-color:var(--down);background:#171F26}
+.drop svg{position:absolute;inset:0;width:100%;height:100%;opacity:.5;pointer-events:none}
+.drop .inner{position:relative;z-index:1}
+.drop h2{font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:15px;margin:0 0 10px;font-weight:600}
+.drop p{margin:0;color:var(--ice);font-size:13px;line-height:1.6;max-width:34ch}
+.drop kbd{font-family:var(--mono);font-size:11px;background:var(--rock-3);border:1px solid var(--line);border-radius:3px;padding:1px 5px}
+
+/* ---------- vezérlők ---------- */
+.grp{border-top:1px solid var(--line);padding:16px 0 4px}
+.grp:first-of-type{border-top:0;padding-top:0}
+.grp>h3{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.2em;font-size:11px;
+  color:var(--ice);margin:0 0 12px;font-weight:600;display:flex;justify-content:space-between;
+}
+.grp>h3 em{font-family:var(--mono);font-style:normal;letter-spacing:0;color:var(--down);font-size:11px}
+label.f{display:block;font-size:11px;color:var(--ice);margin:0 0 5px;letter-spacing:.04em}
+.row{display:flex;gap:8px;margin-bottom:12px}
+.row>*{flex:1;min-width:0}
+
+textarea,select,input[type=text]{
+  width:100%;background:var(--rock);border:1px solid var(--line);border-radius:3px;
+  padding:9px 10px;font-size:13px;outline:none;
+}
+textarea{resize:vertical;min-height:74px;line-height:1.45}
+textarea:focus,select:focus,input:focus{border-color:var(--down)}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--ice) 50%),linear-gradient(135deg,var(--ice) 50%,transparent 50%);background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:28px}
+
+input[type=range]{-webkit-appearance:none;width:100%;height:22px;background:transparent;margin:0}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;margin-top:-6px;border-radius:50%;background:var(--down);border:0;cursor:pointer}
+input[type=range]::-moz-range-track{height:2px;background:var(--line)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radius:50%;background:var(--down);cursor:pointer}
+.val{font-family:var(--mono);font-size:11px;color:var(--ice)}
+.slider-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+
+.btn{
+  background:var(--rock-3);border:1px solid var(--line);border-radius:3px;color:var(--snow);
+  padding:9px 12px;font-size:12px;cursor:pointer;letter-spacing:.03em;transition:.15s;
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn:hover{border-color:var(--ice)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--down);border-color:var(--down);color:#1A1206;font-weight:600}
+.btn.primary:hover{background:#FF9C3F;border-color:#FF9C3F}
+.btn.danger:hover{border-color:var(--crimson);color:#FF8C86}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+.seg{display:flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
+.seg button{flex:1;background:transparent;border:0;border-right:1px solid var(--line);padding:8px 4px;font-size:11px;cursor:pointer;color:var(--ice);letter-spacing:.05em}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--rock-3);color:var(--snow);box-shadow:inset 0 -2px 0 var(--down)}
+.seg button:hover{color:var(--snow)}
+
+.swatches{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.sw{width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.22);cursor:pointer;padding:0}
+.sw[aria-pressed=true]{box-shadow:0 0 0 2px var(--rock-2),0 0 0 3px var(--down)}
+input[type=color]{width:26px;height:26px;padding:0;border:1px solid var(--line);border-radius:4px;background:none;cursor:pointer}
+
+.check{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--snow);cursor:pointer;padding:6px 0}
+.check input{accent-color:var(--down);width:15px;height:15px;cursor:pointer}
+
+.layers{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.lay{
+  display:flex;align-items:center;gap:8px;background:var(--rock);border:1px solid var(--line);
+  border-radius:3px;padding:7px 8px;cursor:pointer;font-size:12px;
+}
+.lay[aria-current=true]{border-color:var(--down);background:#20262C}
+.lay .n{font-family:var(--mono);font-size:10px;color:var(--ice);flex:0 0 auto}
+.lay .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lay .mv{background:none;border:0;color:var(--ice);cursor:pointer;font-size:11px;padding:2px 3px;line-height:1}
+.lay .mv:hover{color:var(--down)}
+.empty{font-size:12px;color:var(--ice);padding:10px 0 14px;line-height:1.6}
+.hint{font-size:11px;color:#6E869A;line-height:1.6;margin:10px 0 0}
+.hint kbd{font-family:var(--mono);background:var(--rock);border:1px solid var(--line);border-radius:3px;padding:1px 4px}
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);opacity:0;pointer-events:none;
+  background:var(--rock-3);border:1px solid var(--line);border-left:3px solid var(--down);
+  padding:11px 16px;border-radius:3px;font-size:13px;z-index:50;transition:.25s;
+  box-shadow:0 16px 40px -16px #000;
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+:focus-visible{outline:2px solid var(--down);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<header class="strip">
+  <div class="mark"><b>Felirat</b> Stúdió</div>
+  <div class="readout" id="readout">
+    <span>KÉP —</span><span>VÁSZON —</span><span>FELIRAT 0</span>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn" id="btnNew">Új kép</button>
+  <button class="btn" id="btnCopy" disabled>Másolás</button>
+  <button class="btn primary" id="btnSave" disabled>Letöltés</button>
+</header>
+
+<div class="wrap">
+  <main class="stage">
+    <div class="holder">
+      <div class="drop" id="drop">
+        <svg viewBox="0 0 400 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <g fill="none" stroke="#2E3B47" stroke-width="1">
+            <path d="M-40 430 C 60 400, 120 300, 200 296 S 340 360, 440 320"/>
+            <path d="M-40 390 C 70 360, 130 262, 200 258 S 345 322, 440 278"/>
+            <path d="M-20 350 C 80 322, 140 226, 200 222 S 330 286, 430 240"/>
+            <path d="M10 312 C 95 286, 150 192, 200 188 S 320 250, 410 204"/>
+            <path d="M45 274 C 110 250, 160 158, 200 154 S 305 214, 375 170" stroke="#3A4A58"/>
+            <path d="M80 236 C 125 214, 172 124, 200 120 S 292 178, 340 136" stroke="#3A4A58"/>
+            <path d="M112 198 C 142 180, 182 92, 200 88 S 278 142, 305 104" stroke="#46596A"/>
+            <path d="M142 160 C 160 148, 190 60, 200 56 S 262 108, 272 72" stroke="#46596A"/>
+          </g>
+        </svg>
+        <div class="inner">
+          <h2>Húzd ide a képet</h2>
+          <p>Vagy kattints a tallózáshoz, esetleg illeszd be a vágólapról: <kbd>⌘V</kbd>. A kép a gépeden marad, semmi nem töltődik fel sehova.</p>
+        </div>
+      </div>
+      <canvas id="cv" hidden></canvas>
+    </div>
+  </main>
+
+  <aside class="panel">
+    <section class="grp">
+      <h3>Vászon</h3>
+      <label class="f">Formátum</label>
+      <div class="seg" id="segFormat" style="margin-bottom:12px">
+        <button data-v="orig" aria-pressed="true">Eredeti</button>
+        <button data-v="9:16">9:16</button>
+        <button data-v="4:5">4:5</button>
+        <button data-v="1:1">1:1</button>
+      </div>
+      <div id="fitBlock" hidden>
+        <label class="f">Kép elhelyezése</label>
+        <div class="seg" id="segFit" style="margin-bottom:12px">
+          <button data-v="cover" aria-pressed="true">Kitölt</button>
+          <button data-v="contain">Belefér</button>
+        </div>
+        <div id="bgBlock" hidden>
+          <label class="f">Háttér a kép mögött</label>
+          <div class="seg" id="segBg" style="margin-bottom:10px">
+            <button data-v="blur" aria-pressed="true">Elmosott kép</button>
+            <button data-v="solid">Szín</button>
+          </div>
+          <div class="swatches" id="bgSolidRow" hidden style="margin-bottom:12px">
+            <input type="color" id="bgColor" value="#101418">
+            <span class="val" id="bgColorVal">#101418</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grp">
+      <h3>Feliratok <em id="layCount">0</em></h3>
+      <div class="layers" id="layers"></div>
+      <div class="row">
+        <button class="btn" id="btnAdd">+ Új felirat</button>
+        <button class="btn" id="btnDup" disabled>Duplikálás</button>
+        <button class="btn danger" id="btnDel" disabled>Törlés</button>
+      </div>
+      <p class="empty" id="emptyNote">Tölts be egy képet, aztán add hozzá az első feliratot. A vásznon egyszerűen húzd a helyére.</p>
+    </section>
+
+    <div id="editor" hidden>
+      <section class="grp">
+        <h3>Szöveg</h3>
+        <textarea id="txt" placeholder="Ready to Himlung summit 🏔" spellcheck="false"></textarea>
+        <label class="f" style="margin-top:12px">Kész stílus</label>
+        <div class="seg" id="segPreset">
+          <button data-v="pill">Pirula</button>
+          <button data-v="band">Sáv</button>
+          <button data-v="clean">Tiszta</button>
+          <button data-v="tag">Címke</button>
+        </div>
+      </section>
+
+      <section class="grp">
+        <h3>Betű</h3>
+        <div class="row">
+          <div>
+            <label class="f">Típus</label>
+            <select id="font">
+              <option value="rounded">Kerekített (story)</option>
+              <option value="grotesk">Groteszk</option>
+              <option value="condensed">Keskeny nagybetűs</option>
+              <option value="serif">Talpas</option>
+              <option value="mono">Monospace</option>
+              <option value="script">Kézírás</option>
+            </select>
+          </div>
+          <div style="flex:0 0 96px">
+            <label class="f">Vastagság</label>
+            <select id="weight">
+              <option value="400">Sima</option>
+              <option value="600" selected>Félkövér</option>
+              <option value="800">Kövér</option>
+            </select>
+          </div>
+        </div>
+        <div class="slider-head"><label class="f">Méret</label><span class="val" id="sizeVal">6.0%</span></div>
+        <input type="range" id="size" min="15" max="180" value="60">
+        <div class="slider-head" style="margin-top:8px"><label class="f">Sortávolság</label><span class="val" id="lhVal">1.24</span></div>
+        <input type="range" id="lh" min="90" max="200" value="124">
+        <label class="f" style="margin-top:12px">Igazítás</label>
+        <div class="seg" id="segAlign">
+          <button data-v="left">Balra</button>
+          <button data-v="center" aria-pressed="true">Középre</button>
+          <button data-v="right">Jobbra</button>
+        </div>
+        <div class="slider-head" style="margin-top:12px"><label class="f">Forgatás</label><span class="val" id="rotVal">0°</span></div>
+        <input type="range" id="rot" min="-45" max="45" value="0">
+      </section>
+
+      <section class="grp">
+        <h3>Szín</h3>
+        <div class="swatches" id="fg" style="margin-bottom:14px"></div>
+        <label class="check"><input type="checkbox" id="shadow"> Vetett árnyék</label>
+        <label class="check"><input type="checkbox" id="stroke"> Körvonal</label>
+      </section>
+
+      <section class="grp">
+        <h3>Doboz</h3>
+        <label class="check" style="margin-bottom:6px"><input type="checkbox" id="boxOn" checked> Legyen háttérdoboz</label>
+        <div id="boxOpts">
+          <div class="swatches" id="bg" style="margin:8px 0 14px"></div>
+          <label class="check"><input type="checkbox" id="full"> Teljes szélességű sáv</label>
+          <div class="slider-head" style="margin-top:10px"><label class="f">Átlátszatlanság</label><span class="val" id="alphaVal">100%</span></div>
+          <input type="range" id="alpha" min="0" max="100" value="100">
+          <div class="slider-head" style="margin-top:8px"><label class="f">Belső margó</label><span class="val" id="padVal">0.42</span></div>
+          <input type="range" id="pad" min="0" max="120" value="42">
+          <div class="slider-head" style="margin-top:8px"><label class="f">Lekerekítés</label><span class="val" id="radVal">28%</span></div>
+          <input type="range" id="rad" min="0" max="100" value="28">
+        </div>
+      </section>
+    </div>
+
+    <section class="grp">
+      <h3>Mentés</h3>
+      <label class="f">Fájlformátum</label>
+      <div class="seg" id="segType" style="margin-bottom:12px">
+        <button data-v="png" aria-pressed="true">PNG</button>
+        <button data-v="jpeg">JPG</button>
+      </div>
+      <button class="btn primary" id="btnSave2" style="width:100%" disabled>Kép letöltése</button>
+      <p class="hint">
+        <kbd>⌘V</kbd> beillesztés · <kbd>⌫</kbd> kijelölt felirat törlése · <kbd>⌘D</kbd> duplikálás ·
+        <kbd>↑↓←→</kbd> finomhangolás (<kbd>⇧</kbd>-tel nagyobb lépés)
+      </p>
+    </section>
+  </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<input type="file" id="file" accept="image/*" hidden>
+
+<script>
+(() => {
+"use strict";
+
+const FONTS = {
+  rounded:  `"SF Pro Rounded","Arial Rounded MT Bold","Avenir Next",system-ui,sans-serif`,
+  grotesk:  `"Avenir Next","Helvetica Neue",Inter,system-ui,sans-serif`,
+  condensed:`"Avenir Next Condensed","Futura",Impact,sans-serif`,
+  serif:    `Georgia,"Times New Roman",serif`,
+  mono:     `"SF Mono",ui-monospace,Menlo,monospace`,
+  script:   `"Snell Roundhand","Brush Script MT",cursive`
+};
+const FG = ["#FFFFFF","#12171C","#FF8A1F","#D8342C","#8FD3F4","#FFE9C7"];
+const BGC = ["#000000","#FFFFFF","#FF8A1F","#D8342C","#1F2A33","#3A6B8A"];
+
+const S = {
+  img:null, name:"kep",
+  format:"orig", fit:"cover", bgMode:"blur", bgColor:"#101418",
+  W:0, H:0, layers:[], sel:null, type:"png"
+};
+let uid = 1;
+
+const $ = s => document.querySelector(s);
+const cv = $("#cv"), ctx = cv.getContext("2d");
+const drop = $("#drop"), file = $("#file");
+
+/* ---------------- betöltés ---------------- */
+function loadFile(f){
+  if(!f || !f.type.startsWith("image/")) return toast("Ez nem képfájl.");
+  const url = URL.createObjectURL(f);
+  const im = new Image();
+  im.onload = () => {
+    S.img = im; S.name = (f.name||"kep").replace(/\.[^.]+$/,"") || "kep";
+    if(!S.layers.length) addLayer("pill", "Ready to Himlung summit 🏔");
+    drop.hidden = true; cv.hidden = false;
+    ["#btnSave","#btnSave2","#btnCopy"].forEach(s=>$(s).disabled=false);
+    resize(); render(); syncUI();
+    toast("Kép betöltve — húzd a feliratot a helyére.");
+  };
+  im.onerror = () => toast("A képet nem sikerült megnyitni.");
+  im.src = url;
+}
+drop.onclick = () => file.click();
+$("#btnNew").onclick = () => file.click();
+file.onchange = e => { loadFile(e.target.files[0]); file.value=""; };
+["dragenter","dragover"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.add("over")}));
+["dragleave","drop"].forEach(t=>drop.addEventListener(t,e=>{e.preventDefault();drop.classList.remove("over")}));
+document.addEventListener("dragover", e=>e.preventDefault());
+document.addEventListener("drop", e=>{ e.preventDefault(); const f=e.dataTransfer.files[0]; if(f) loadFile(f); });
+document.addEventListener("paste", e=>{
+  const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith("image/"));
+  if(it) loadFile(it.getAsFile());
+});
+
+/* ---------------- vászon mérete ---------------- */
+function resize(){
+  const iw=S.img.naturalWidth, ih=S.img.naturalHeight;
+  if(S.format==="orig"){
+    const cap=2400, k=Math.min(1,cap/Math.max(iw,ih));
+    S.W=Math.round(iw*k); S.H=Math.round(ih*k);
+  } else {
+    const r={"9:16":9/16,"4:5":4/5,"1:1":1}[S.format];
+    const long=1600;
+    if(r<1){ S.H=long; S.W=Math.round(long*r); } else { S.W=long; S.H=Math.round(long/r); }
+  }
+  cv.width=S.W; cv.height=S.H;
+}
+
+/* ---------------- rétegek ---------------- */
+const PRESETS = {
+  pill:  {font:"rounded",weight:"600",size:.055,align:"center",color:"#FFFFFF",boxOn:true,bg:"#000000",alpha:1,pad:.42,rad:.28,full:false,shadow:false,stroke:false,lh:1.24},
+  band:  {font:"grotesk",weight:"400",size:.042,align:"center",color:"#FFFFFF",boxOn:true,bg:"#3A6B8A",alpha:.55,pad:.9,rad:0,full:true,shadow:false,stroke:false,lh:1.3},
+  clean: {font:"rounded",weight:"800",size:.075,align:"center",color:"#FFFFFF",boxOn:false,bg:"#000000",alpha:1,pad:.3,rad:.28,full:false,shadow:true,stroke:false,lh:1.15},
+  tag:   {font:"condensed",weight:"800",size:.05,align:"center",color:"#12171C",boxOn:true,bg:"#FF8A1F",alpha:1,pad:.5,rad:.12,full:false,shadow:false,stroke:false,lh:1.2}
+};
+function addLayer(preset="pill", text="Új felirat"){
+  const L = Object.assign({id:uid++, text, x:.5, y:.16, rot:0}, PRESETS[preset]);
+  S.layers.push(L); S.sel=L.id; return L;
+}
+const sel = () => S.layers.find(l=>l.id===S.sel) || null;
+
+/* ---------------- rajzolás ---------------- */
+function fontStr(L,fs){ return `${L.weight} ${fs}px ${FONTS[L.font]}`; }
+
+function metrics(L){
+  const fs=L.size*S.W;
+  ctx.font=fontStr(L,fs);
+  const lines=(L.text===""?" ":L.text).split("\n");
+  const lineH=fs*L.lh;
+  let tw=0; for(const l of lines) tw=Math.max(tw, ctx.measureText(l===""?" ":l).width);
+  const padX=fs*L.pad, padY=fs*L.pad*.62;
+  const boxW=L.full?S.W:Math.min(tw+padX*2, S.W*.98);
+  const boxH=lineH*lines.length+padY*2;
+  return {fs,lines,lineH,tw,padX,padY,boxW,boxH};
+}
+function rrect(x,y,w,h,r){
+  r=Math.max(0,Math.min(r,w/2,h/2));
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(x,y,w,h,r);
+  else{
+    ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+  }
+}
+function drawImageFit(){
+  const iw=S.img.naturalWidth, ih=S.img.naturalHeight;
+  const mode = S.format==="orig" ? "cover" : S.fit;
+  if(mode==="contain"){
+    if(S.bgMode==="blur"){
+      const k=Math.max(S.W/iw,S.H/ih)*1.25, w=iw*k, h=ih*k;
+      const ok = "filter" in ctx;
+      if(ok) ctx.filter=`blur(${Math.round(S.W*.05)}px) saturate(1.1)`;
+      ctx.drawImage(S.img,(S.W-w)/2,(S.H-h)/2,w,h);
+      if(ok) ctx.filter="none";
+      ctx.fillStyle="rgba(10,14,18,.28)"; ctx.fillRect(0,0,S.W,S.H);
+    } else { ctx.fillStyle=S.bgColor; ctx.fillRect(0,0,S.W,S.H); }
+    const k=Math.min(S.W/iw,S.H/ih), w=iw*k, h=ih*k;
+    ctx.drawImage(S.img,(S.W-w)/2,(S.H-h)/2,w,h);
+  } else {
+    const k=Math.max(S.W/iw,S.H/ih), w=iw*k, h=ih*k;
+    ctx.drawImage(S.img,(S.W-w)/2,(S.H-h)/2,w,h);
+  }
+}
+function drawLayer(L){
+  const m=metrics(L);
+  const cx=(L.full?.5:L.x)*S.W, cy=L.y*S.H;
+  ctx.save();
+  ctx.translate(cx,cy);
+  if(!L.full) ctx.rotate(L.rot*Math.PI/180);
+  if(L.boxOn){
+    ctx.globalAlpha=L.alpha; ctx.fillStyle=L.bg;
+    rrect(-m.boxW/2,-m.boxH/2,m.boxW,m.boxH, m.boxH*L.rad);
+    ctx.fill(); ctx.globalAlpha=1;
+  }
+  ctx.font=fontStr(L,m.fs);
+  ctx.textAlign=L.align; ctx.textBaseline="middle";
+  const tx = L.align==="left" ? -m.boxW/2+m.padX : L.align==="right" ? m.boxW/2-m.padX : 0;
+  m.lines.forEach((line,i)=>{
+    const ty = -m.boxH/2 + m.padY + m.lineH*(i+.5);
+    if(L.shadow){ ctx.shadowColor="rgba(0,0,0,.55)"; ctx.shadowBlur=m.fs*.3; ctx.shadowOffsetY=m.fs*.06; }
+    if(L.stroke){
+      ctx.lineWidth=m.fs*.09; ctx.lineJoin="round"; ctx.strokeStyle="#000";
+      ctx.strokeText(line,tx,ty);
+    }
+    ctx.fillStyle=L.color; ctx.fillText(line,tx,ty);
+    ctx.shadowColor="transparent"; ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+  });
+  ctx.restore();
+  return m;
+}
+function render(forExport=false){
+  if(!S.img) return;
+  ctx.clearRect(0,0,S.W,S.H);
+  ctx.fillStyle="#0C1014"; ctx.fillRect(0,0,S.W,S.H);
+  drawImageFit();
+  for(const L of S.layers){
+    const m=drawLayer(L);
+    if(!forExport && L.id===S.sel){
+      const cx=(L.full?.5:L.x)*S.W, cy=L.y*S.H;
+      ctx.save(); ctx.translate(cx,cy); if(!L.full) ctx.rotate(L.rot*Math.PI/180);
+      ctx.strokeStyle="#FF8A1F"; ctx.lineWidth=Math.max(2,S.W*.0022);
+      ctx.setLineDash([S.W*.012,S.W*.009]);
+      ctx.strokeRect(-m.boxW/2,-m.boxH/2,m.boxW,m.boxH);
+      ctx.restore();
+    }
+  }
+  readout();
+}
+function readout(){
+  $("#readout").innerHTML =
+    `<span>KÉP ${S.img?S.img.naturalWidth+"×"+S.img.naturalHeight:"—"}</span>`+
+    `<span>VÁSZON ${S.img?S.W+"×"+S.H:"—"}</span>`+
+    `<span>FELIRAT ${S.layers.length}</span>`;
+  $("#layCount").textContent = S.layers.length;
+}
+
+/* ---------------- húzás ---------------- */
+function toCv(e){
+  const r=cv.getBoundingClientRect();
+  return {x:(e.clientX-r.left)*(cv.width/r.width), y:(e.clientY-r.top)*(cv.height/r.height)};
+}
+function hit(p){
+  for(let i=S.layers.length-1;i>=0;i--){
+    const L=S.layers[i], m=metrics(L);
+    const cx=(L.full?.5:L.x)*S.W, cy=L.y*S.H;
+    let dx=p.x-cx, dy=p.y-cy;
+    if(!L.full){ const a=-L.rot*Math.PI/180, c=Math.cos(a), s=Math.sin(a);
+      [dx,dy]=[dx*c-dy*s, dx*s+dy*c]; }
+    if(Math.abs(dx)<=m.boxW/2 && Math.abs(dy)<=m.boxH/2) return L;
+  }
+  return null;
+}
+let drag=null;
+cv.addEventListener("pointerdown", e=>{
+  const p=toCv(e), L=hit(p);
+  S.sel = L ? L.id : null;
+  if(L){ drag={id:L.id, ox:p.x-L.x*S.W, oy:p.y-L.y*S.H}; cv.setPointerCapture(e.pointerId); cv.classList.add("dragging"); }
+  render(); syncUI();
+});
+cv.addEventListener("pointermove", e=>{
+  const p=toCv(e);
+  if(!drag){ cv.classList.toggle("has-hit", !!hit(p)); return; }
+  const L=S.layers.find(l=>l.id===drag.id); if(!L) return;
+  L.x=Math.max(0,Math.min(1,(p.x-drag.ox)/S.W));
+  L.y=Math.max(0,Math.min(1,(p.y-drag.oy)/S.H));
+  render();
+});
+["pointerup","pointercancel"].forEach(t=>cv.addEventListener(t,()=>{drag=null;cv.classList.remove("dragging")}));
+
+/* ---------------- vezérlők ---------------- */
+function segment(id, get, set){
+  const el=$(id);
+  el.addEventListener("click", e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    set(b.dataset.v); paint(); render(); syncUI();
+  });
+  el._paint = () => [...el.children].forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.v===get())));
+  function paint(){ el._paint(); }
+  paint();
+}
+segment("#segFormat", ()=>S.format, v=>{ S.format=v; resize(); });
+segment("#segFit", ()=>S.fit, v=>S.fit=v);
+segment("#segBg", ()=>S.bgMode, v=>S.bgMode=v);
+segment("#segType", ()=>S.type, v=>S.type=v);
+segment("#segAlign", ()=>sel()?.align, v=>{ const L=sel(); if(L) L.align=v; });
+$("#segPreset").addEventListener("click", e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  const L=sel(); if(!L) return;
+  Object.assign(L, PRESETS[b.dataset.v]); render(); syncUI();
+});
+$("#bgColor").oninput = e => { S.bgColor=e.target.value; $("#bgColorVal").textContent=e.target.value; render(); };
+
+function swatches(host, colors, get, set){
+  const el=$(host);
+  el.innerHTML = colors.map(c=>`<button class="sw" data-c="${c}" style="background:${c}" title="${c}"></button>`).join("")
+    + `<input type="color" class="pick">`;
+  el.addEventListener("click", e=>{
+    const b=e.target.closest(".sw"); if(!b) return;
+    set(b.dataset.c); render(); syncUI();
+  });
+  el.querySelector(".pick").addEventListener("input", e=>{ set(e.target.value); render(); syncUI(); });
+  el._paint = () => {
+    const cur=(get()||"").toUpperCase();
+    el.querySelectorAll(".sw").forEach(b=>b.setAttribute("aria-pressed", String(b.dataset.c.toUpperCase()===cur)));
+    el.querySelector(".pick").value = get()||"#000000";
+  };
+}
+swatches("#fg", FG, ()=>sel()?.color, v=>{ const L=sel(); if(L) L.color=v; });
+swatches("#bg", BGC, ()=>sel()?.bg, v=>{ const L=sel(); if(L) L.bg=v; });
+
+function bind(id, prop, {scale=1, fmt=null, ev="input"}={}){
+  const el=$(id);
+  el.addEventListener(ev, ()=>{
+    const L=sel(); if(!L) return;
+    L[prop] = el.type==="checkbox" ? el.checked
+            : el.type==="range" ? Number(el.value)*scale
+            : el.value;
+    render(); syncUI();
+  });
+  el._read = L => {
+    if(el.type==="checkbox") el.checked=!!L[prop];
+    else if(el.type==="range") el.value=Math.round(L[prop]/scale);
+    else el.value=L[prop];
+    if(fmt) $(fmt.el).textContent = fmt.f(L[prop]);
+  };
+  return el;
+}
+const binds=[
+  bind("#txt","text"),
+  bind("#font","font"), bind("#weight","weight"),
+  bind("#size","size",{scale:.001, fmt:{el:"#sizeVal", f:v=>(v*100).toFixed(1)+"%"}}),
+  bind("#lh","lh",{scale:.01, fmt:{el:"#lhVal", f:v=>v.toFixed(2)}}),
+  bind("#rot","rot",{fmt:{el:"#rotVal", f:v=>Math.round(v)+"°"}}),
+  bind("#alpha","alpha",{scale:.01, fmt:{el:"#alphaVal", f:v=>Math.round(v*100)+"%"}}),
+  bind("#pad","pad",{scale:.01, fmt:{el:"#padVal", f:v=>v.toFixed(2)}}),
+  bind("#rad","rad",{scale:.01, fmt:{el:"#radVal", f:v=>Math.round(v*100)+"%"}}),
+  bind("#boxOn","boxOn",{ev:"change"}), bind("#full","full",{ev:"change"}),
+  bind("#shadow","shadow",{ev:"change"}), bind("#stroke","stroke",{ev:"change"})
+];
+
+$("#btnAdd").onclick = () => {
+  if(!S.img) return toast("Előbb tölts be egy képet.");
+  const L=addLayer("pill","Új felirat");
+  L.y = Math.min(.9, .16 + (S.layers.length-1)*.12);
+  render(); syncUI(); $("#txt").focus(); $("#txt").select();
+};
+$("#btnDup").onclick = () => {
+  const L=sel(); if(!L) return;
+  const c=Object.assign({},L,{id:uid++, y:Math.min(.96,L.y+.08)});
+  S.layers.push(c); S.sel=c.id; render(); syncUI();
+};
+$("#btnDel").onclick = () => {
+  const L=sel(); if(!L) return;
+  S.layers=S.layers.filter(l=>l.id!==L.id); S.sel=S.layers.at(-1)?.id ?? null;
+  render(); syncUI();
+};
+
+function syncUI(){
+  const L=sel(), has=!!L;
+  $("#editor").hidden=!has;
+  $("#btnDup").disabled=!has; $("#btnDel").disabled=!has;
+  $("#emptyNote").hidden = S.layers.length>0;
+  $("#fitBlock").hidden = S.format==="orig";
+  $("#bgBlock").hidden = S.fit!=="contain" || S.format==="orig";
+  $("#bgSolidRow").hidden = S.bgMode!=="solid";
+  $("#boxOpts").style.display = L && !L.boxOn ? "none" : "";
+  document.querySelectorAll(".seg").forEach(s=>s._paint&&s._paint());
+  if(has){ binds.forEach(b=>b._read(L)); $("#fg")._paint(); $("#bg")._paint(); }
+  $("#layers").innerHTML = S.layers.map((l,i)=>`
+    <div class="lay" data-id="${l.id}" aria-current="${l.id===S.sel}">
+      <span class="n">${String(i+1).padStart(2,"0")}</span>
+      <span class="t">${(l.text.split("\n")[0]||"(üres)").replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]))}</span>
+      <button class="mv" data-mv="-1" title="Hátrébb">▲</button>
+      <button class="mv" data-mv="1" title="Előrébb">▼</button>
+    </div>`).join("");
+  readout();
+}
+$("#layers").addEventListener("click", e=>{
+  const row=e.target.closest(".lay"); if(!row) return;
+  const id=Number(row.dataset.id), i=S.layers.findIndex(l=>l.id===id);
+  const mv=e.target.closest(".mv");
+  if(mv){
+    const j=i+Number(mv.dataset.mv);
+    if(j>=0 && j<S.layers.length){ [S.layers[i],S.layers[j]]=[S.layers[j],S.layers[i]]; }
+  } else S.sel=id;
+  render(); syncUI();
+});
+
+/* ---------------- billentyűk ---------------- */
+document.addEventListener("keydown", e=>{
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  const L=sel();
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="d"){ e.preventDefault(); $("#btnDup").click(); return; }
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==="s"){ e.preventDefault(); save(); return; }
+  if(typing || !L) return;
+  const step=(e.shiftKey?.02:.004);
+  const map={ArrowLeft:[-step,0],ArrowRight:[step,0],ArrowUp:[0,-step],ArrowDown:[0,step]};
+  if(map[e.key]){ e.preventDefault(); L.x=Math.max(0,Math.min(1,L.x+map[e.key][0])); L.y=Math.max(0,Math.min(1,L.y+map[e.key][1])); render(); }
+  if(e.key==="Backspace"||e.key==="Delete"){ e.preventDefault(); $("#btnDel").click(); }
+});
+
+/* ---------------- mentés ---------------- */
+function stamp(){
+  const d=new Date(), p=n=>String(n).padStart(2,"0");
+  return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}`;
+}
+function exportBlob(cb){
+  const keep=S.sel; S.sel=null; render(true);
+  cv.toBlob(b=>{ S.sel=keep; render(); cb(b); }, S.type==="png"?"image/png":"image/jpeg", .92);
+}
+function save(){
+  if(!S.img) return;
+  exportBlob(b=>{
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(b);
+    a.download=`${S.name}-felirat-${stamp()}.${S.type==="png"?"png":"jpg"}`;
+    a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    toast("Letöltve: " + a.download);
+  });
+}
+$("#btnSave").onclick=save; $("#btnSave2").onclick=save;
+$("#btnCopy").onclick = () => {
+  if(!S.img) return;
+  const keep=S.sel; S.sel=null; render(true);
+  try{
+    const item=new ClipboardItem({"image/png": new Promise(res=>cv.toBlob(res,"image/png"))});
+    navigator.clipboard.write([item])
+      .then(()=>toast("Vágólapra másolva — mehet ⌘V-vel bárhova."))
+      .catch(()=>toast("A böngésző nem engedte a másolást. Töltsd le inkább."))
+      .finally(()=>{S.sel=keep; render();});
+  }catch(err){ S.sel=keep; render(); toast("Ez a böngésző nem tud vágólapra másolni."); }
+};
+
+let tt;
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("on");
+  clearTimeout(tt); tt=setTimeout(()=>t.classList.remove("on"),2600);
+}
+syncUI();
+})();
+</script>
+</body>
+</html>
